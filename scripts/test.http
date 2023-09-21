@@ -1,4 +1,19 @@
+###
 GET http://localhost:3030/data
 Accept: application/json
+authorization: takenoko
 
 ###
+
+POST http://localhost:3030/data
+Content-Type: application/json
+authorization: takenoko
+
+{
+  "a": "b"
+}
+
+###
+
+PUT http://localhost:3030/data
+Content-Type: application/json
