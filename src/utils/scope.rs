@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use tokio::sync::{Mutex, MutexGuard};
+use tokio::sync::Mutex;
 
 pub fn scope_let<T, F, R>(
     obj: T,
@@ -9,10 +9,11 @@ pub fn scope_let<T, F, R>(
 }
 
 pub async fn async_let<T, F, R>(
-    obj: Arc<Mutex<T>>,
+    obj: &Arc<Mutex<T>>,
     f: F,
-) -> R where F: FnOnce(MutexGuard<T>) -> R {
-    scope_let(obj.lock().await, f)
+) -> R where F: FnOnce(&mut T) -> R {
+    let mut guard = obj.lock().await;
+    scope_let(&mut *guard, f)
 }
 
 // pub fn scope_apply<T, F>(
@@ -21,4 +22,13 @@ pub async fn async_let<T, F, R>(
 // ) -> T where F: FnOnce(&mut T) {
 //     f(&mut obj);
 //     obj
+// }
+
+
+// pub async fn async_also<T, F, R>(
+//     obj: &Arc<Mutex<T>>,
+//     f: F,
+// ) -> R where F: FnOnce(&mut T) -> T {
+//     let mut guard = obj.lock().await;
+//     scope_let(&mut *guard, f)
 // }
