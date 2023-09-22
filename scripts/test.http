@@ -1,19 +1,49 @@
 ###
+GET http://localhost:3030/data?q=a
+Accept: application/json
+authorization: takenoko
+
+###
 GET http://localhost:3030/data
 Accept: application/json
 authorization: takenoko
 
 ###
-
 POST http://localhost:3030/data
 Content-Type: application/json
 authorization: takenoko
 
 {
-  "a": "b"
+  "a": "b",
+  "key1": "value1",
+  "key2": "value2",
+  "key3": "value3",
+  "key4": "value4",
+  "key5": "value5"
 }
 
 ###
+POST http://localhost:3030/data
+Content-Type: application/json
+authorization: takenoko
 
+{
+  "c": "d",
+  "key6": "value6",
+  "key7": "value7",
+  "key8": "value8",
+  "key9": "value9",
+  "key0": "value0"
+}
+
+###
 PUT http://localhost:3030/data
 Content-Type: application/json
+
+###
+DELETE http://localhost:3030/data
+authorization: takenoko
+
+###
+DELETE http://localhost:3030/data?q=c
+authorization: takenoko
