@@ -1,5 +1,6 @@
-use std::sync::Arc;
-use tokio::sync::Mutex;
+use std::future::Future;
+use std::sync::{Arc};
+use tokio::sync::{Mutex, MutexGuard};
 
 pub fn scope_let<T, F, R>(
     obj: T,
@@ -16,19 +17,16 @@ pub async fn async_let<T, F, R>(
     scope_let(&mut *guard, f)
 }
 
-// pub fn scope_apply<T, F>(
-//     mut obj: T,
-//     f: F,
-// ) -> T where F: FnOnce(&mut T) {
-//     f(&mut obj);
-//     obj
-// }
+pub async fn await_let<T, F, Ft, R>(
+    obj: &Arc<Mutex<T>>,
+    f: F,
+) -> R where
+    for<'a> F: FnOnce(&'a mut T) -> Ft + 'a,
+    Ft: Future<Output=R> {
+    let mut guard = obj.lock().await;
+    f(&mut *guard).await
+}
 
-
-// pub async fn async_also<T, F, R>(
-//     obj: &Arc<Mutex<T>>,
-//     f: F,
-// ) -> R where F: FnOnce(&mut T) -> T {
-//     let mut guard = obj.lock().await;
-//     scope_let(&mut *guard, f)
-// }
+pub async fn copy_let<T>(obj: &Arc<Mutex<T>>) -> T where T: Clone {
+    obj.lock().await.clone()
+}
