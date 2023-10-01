@@ -23,7 +23,7 @@ done
 
 echo "post done."
 
-for i in {1..3}; do
+for i in {1..100}; do
   curl -X DELETE "http://localhost:3030/data?q=$(printf "c%03d" "$i")" \
     -H "Content-Type: application/json" \
     -H "authorization: takenoko" \

@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::mem::replace;
 use std::sync::Arc;
-use log::{error, info};
 use serde_json::{from_str, to_string_pretty};
 use tokio::time::*;
 use tokio::sync::Mutex;
@@ -54,17 +53,18 @@ impl DataRepository {
     pub async fn save(&self, key: String, value: String) {
         async_let(&self.data, |data| data.insert(key, value)).await;
         if !async_let(&self.lock, |it| !replace(it, true)).await {
-            sleep(Duration::from_secs(3)).await;
+            sleep(Duration::from_secs(1)).await;
         }
         let mut new_lock = self.lock.lock().await;
         let mut new_data = copy_let(&self.data).await;
         if !new_data.is_empty() {
             new_data.extend(self.load_all().await);
-            async_let(&self.data, |data| data.clear()).await;
-            self.write_data(new_data).await;
+            self.write_data(new_data.clone()).await;
+            async_let(&self.data, |data| {
+                new_data.iter().for_each(|(key, _)| { data.remove(key); })
+            }).await;
         }
         *new_lock = false;
-        drop(new_lock);
     }
 
     pub async fn remove_all(&self) {
@@ -82,8 +82,8 @@ impl DataRepository {
     }
 
     async fn write_data(&self, data: HashMap<String, String>) {
-        info!("write_data. len={:?}", data.len());
-        sleep(Duration::from_secs(1)).await;
+        // info!("write_data. len={:?}", data.len());
+        // sleep(Duration::from_secs(1)).await;
         let sorted_map = sort_map(data);
         let json_data = to_string_pretty(&sorted_map.clone()).unwrap();
         let mut file = File::create(Self::DATA_JSON_FILE).await.unwrap();
